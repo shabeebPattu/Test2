@@ -1,0 +1,182 @@
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import static org.junit.Assert.assertTrue;
+
+public class LoginTest {
+
+    private WebDriver driver;
+
+    @Before
+    public void setUp() {
+        System.setProperty("webdriver.chrome.driver", "./driver/chromedriver.exe");
+        driver = new ChromeDriver();
+    }
+
+    @Test
+    public void testPositiveLogin() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Correct email and password
+        driver.findElement(By.id("username")).sendKeys("lmalo5898@gmail.com");
+        driver.findElement(By.id("password")).sendKeys("Shabeeb@23");
+        driver.findElement(By.id("login")).click();
+
+        // Wait for some element that indicates successful login
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebElement logoutButton = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(By.id("logout")) 
+        );
+        
+        assertTrue(logoutButton.isDisplayed());
+    }
+
+    // Test cases for the username field
+    @Test
+    public void testEmptyUsername() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Empty username field
+        driver.findElement(By.id("username")).sendKeys("");
+        driver.findElement(By.id("password")).sendKeys("Shabeeb@23");
+        driver.findElement(By.id("login")).click();
+
+        // Wait for the error message
+        verifyErrorMessage("Please enter a correct username and password. Note that both fields may be case-sensitive."); 
+    }
+
+    @Test
+    public void testUsernameWithOnlyNumbers() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Username with only numbers
+        driver.findElement(By.id("username")).sendKeys("123456");
+        driver.findElement(By.id("password")).sendKeys("Shabeeb@23");
+        driver.findElement(By.id("login")).click();
+
+        // Wait for the error message
+        verifyErrorMessage("Please enter a correct username and password. Note that both fields may be case-sensitive."); 
+    }
+
+    @Test
+    public void testUsernameWithOnlyAlphabets() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Username with only alphabets
+        driver.findElement(By.id("username")).sendKeys("demo");
+        driver.findElement(By.id("password")).sendKeys("Shabeeb@23");
+        driver.findElement(By.id("login")).click();
+
+        // Wait for the error message
+        verifyErrorMessage("Please enter a correct username and password. Note that both fields may be case-sensitive."); 
+    }
+
+    @Test
+    public void testUsernameWithAlphanumeric() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Username with alphanumeric characters
+        driver.findElement(By.id("username")).sendKeys("demo123");
+        driver.findElement(By.id("password")).sendKeys("Shabeeb@23");
+        driver.findElement(By.id("login")).click();
+
+        // Wait for the error message or successful login
+        verifyErrorMessage("Please enter a correct username and password. Note that both fields may be case-sensitive."); 
+    }
+
+    @Test
+    public void testUsernameWithSpecialCharacters() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Username with special characters
+        driver.findElement(By.id("username")).sendKeys("demo@!");
+        driver.findElement(By.id("password")).sendKeys("Shabeeb@23");
+        driver.findElement(By.id("login")).click();
+
+        // Wait for the error message
+        verifyErrorMessage("Please enter a correct username and password. Note that both fields may be case-sensitive."); // 
+    }
+
+    // Test cases for different domains in the username
+    @Test
+    public void testUsernameWithDifferentDomains() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Different domain names
+        String[] domains = {"example.com", "test.org", "invalid@domain", "user@.com", "user@domain.c"};
+
+        for (String domain : domains) {
+            driver.findElement(By.id("username")).clear();
+            driver.findElement(By.id("username")).sendKeys("user@" + domain);
+            driver.findElement(By.id("password")).sendKeys("Shabeeb@23");
+            driver.findElement(By.id("login")).click();
+
+            // Wait for the error message
+            verifyErrorMessage("Please enter a correct username and password. Note that both fields may be case-sensitive."); 
+        }
+    }
+
+    // Test cases for the password field
+    @Test
+    public void testEmptyPassword() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Empty password field
+        driver.findElement(By.id("username")).sendKeys("lmalo5898@gmail.com");
+        driver.findElement(By.id("password")).sendKeys("");
+        driver.findElement(By.id("login")).click();
+
+        // Wait for the error message
+        verifyErrorMessage("Please enter a correct username and password. Note that both fields may be case-sensitive."); 
+    }
+
+    @Test
+    public void testWrongPassword() {
+        driver.get("https://app.germanyiscalling.com/common/login/");
+        
+        // Correct username with wrong password
+        driver.findElement(By.id("username")).sendKeys("lmalo5898@gmail.com");
+        driver.findElement(By.id("password")).sendKeys("Demo13");
+        driver.findElement(By.id("login")).click();
+
+        // Wait for the error message
+        verifyErrorMessage("Please enter a correct username and password. Note that both fields may be case-sensitive."); 
+    }
+
+    private void verifyErrorMessage(String expectedMessage) {
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebElement errorMessage = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".error-message")) // Adjust selector to match your actual error message element
+        );
+        assertTrue(errorMessage.isDisplayed());
+        assertTrue(errorMessage.getText().contains(expectedMessage));
+    }
+
+    @After
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}
+
+Create a TestNG XML Configuration File:
+
+Define your test suite and test classes in an XML file named testng.xml:
+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Suite">
+    <test name="Login Tests">
+        <classes>
+            <class name="com.example.LoginTest"/>
+        </classes>
+    </test>
+</suite>
+After execution, TestNG generates an HTML report in the test-output directory. Open test-output/index.html in your browser to view the report.
